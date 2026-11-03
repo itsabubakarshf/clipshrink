@@ -1,0 +1,19 @@
+[package]
+name = "compressor"
+version = "0.1.0"
+edition = "2021"
+description = "Split videos into size-limited parts and/or compress them, powered by ffmpeg"
+license = "MIT"
+
+[dependencies]
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+indicatif = "0.17"
+serde_json = "1"
+walkdir = "2"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
