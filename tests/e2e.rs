@@ -124,3 +124,24 @@ fn both_mode_on_folder() {
     let again = run(&[d.to_str().unwrap(), "--max-size", "500KB", "--preset", "ultrafast"]);
     assert!(String::from_utf8_lossy(&again.stdout).contains("skipped"));
 }
+
+#[test]
+fn reduce_hits_requested_percentage() {
+    if !have_ffmpeg() {
+        return;
+    }
+    let d = tmpdir("reduce");
+    let video = d.join("clip.mp4");
+    make_video(&video, 25);
+    let before = std::fs::metadata(&video).unwrap().len() as f64;
+    let out = run(&[video.to_str().unwrap(), "--mode", "compress", "--reduce", "40%", "--preset", "ultrafast"]);
+    assert!(out.status.success(), "{}", String::from_utf8_lossy(&out.stderr));
+    let files = outputs(&d.join("compressor_out"));
+    assert_eq!(files.len(), 1, "{files:?}");
+    let saved = 100.0 * (1.0 - files[0].1 as f64 / before);
+    assert!((32.0..=48.0).contains(&saved), "saved {saved:.1}%");
+
+    // Reduction makes no sense for split-only.
+    let bad = run(&[video.to_str().unwrap(), "--mode", "split", "--reduce", "40"]);
+    assert!(!bad.status.success());
+}

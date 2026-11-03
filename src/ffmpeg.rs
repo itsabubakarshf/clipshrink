@@ -6,7 +6,6 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
 use anyhow::{anyhow, bail, Context, Result};
-use indicatif::ProgressBar;
 
 use crate::cli::{Codec, EncoderKind};
 
@@ -90,13 +89,13 @@ impl Tools {
         Ok(MediaInfo {
             duration,
             size: std::fs::metadata(path)?.len(),
+            has_audio: streams.iter().any(|s| s["codec_type"] == "audio"),
         })
     }
 
-    /// Run ffmpeg, updating `pb` (length is in milliseconds of media time).
-    pub fn run(&self, args: &Args, duration: f64, pb: &ProgressBar) -> Result<()> {
-        pb.set_length((duration * 1000.0) as u64);
-        pb.set_position(0);
+    /// Run ffmpeg, reporting progress (0..1 of `duration`) to `ui`.
+    pub fn run(&self, args: &Args, duration: f64, ui: &dyn Ui) -> Result<()> {
+        ui.progress(0.0);
         let mut child = Command::new(&self.ffmpeg)
             .args(["-hide_banner", "-nostdin", "-y", "-loglevel", "error", "-nostats", "-progress", "pipe:1"])
             .args(&args.0)
@@ -120,7 +119,12 @@ impl Tools {
                 .or_else(|| line.strip_prefix("out_time_ms="))
                 .and_then(|v| v.trim().parse::<i64>().ok())
             {
-                pb.set_position((us.max(0) / 1000) as u64);
+                ui.progress(us.max(0) as f64 / 1e6 / duration);
+            }
+            if ui.cancelled() {
+                let _ = child.kill();
+                let _ = child.wait();
+                bail!("cancelled");
             }
         }
 
@@ -130,7 +134,7 @@ impl Tools {
             let tail: Vec<&str> = err.lines().rev().take(8).collect::<Vec<_>>().into_iter().rev().collect();
             bail!("ffmpeg failed ({status}):\n{}", tail.join("\n"));
         }
-        pb.set_position(pb.length().unwrap_or(0));
+        ui.progress(1.0);
         Ok(())
     }
 
@@ -182,10 +186,47 @@ pub fn encoder_name(kind: EncoderKind, codec: Codec) -> &'static str {
     }
 }
 
+/// Where progress and messages go (terminal or GUI).
+pub trait Ui: Sync {
+    /// Progress of the current step, 0.0..=1.0
+    fn progress(&self, frac: f64);
+    /// Short description of the current step
+    fn status(&self, msg: &str);
+    /// A line for the log
+    fn log(&self, msg: &str);
+    fn file_start(&self, _index: usize, _total: usize, _name: &str) {}
+    fn cancelled(&self) -> bool {
+        false
+    }
+}
+
+/// Maps progress of a sub-step onto a slice [lo, hi] of the whole.
+pub struct Slice<'a> {
+    pub ui: &'a dyn Ui,
+    pub lo: f64,
+    pub hi: f64,
+}
+
+impl Ui for Slice<'_> {
+    fn progress(&self, f: f64) {
+        self.ui.progress(self.lo + (self.hi - self.lo) * f.clamp(0.0, 1.0));
+    }
+    fn status(&self, m: &str) {
+        self.ui.status(m)
+    }
+    fn log(&self, m: &str) {
+        self.ui.log(m)
+    }
+    fn cancelled(&self) -> bool {
+        self.ui.cancelled()
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct MediaInfo {
     pub duration: f64,
     pub size: u64,
+    pub has_audio: bool,
 }
 
 /// Tiny builder for ffmpeg argument lists (keeps paths as OsStrings).

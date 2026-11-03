@@ -17,8 +17,13 @@ Works on a single file or a whole folder.
 
 ## Usage
 
-Double-click `compressor.exe` (or run it with no arguments) for an interactive prompt — paste or drag in a
-path, pick a mode, done. Or use flags:
+### Window (easiest)
+
+Double-click `compressor.exe`. Pick a video or folder (or drag it onto the window), choose **Compress**,
+**Split into parts** or **Compress, then split**, drag the **"x% smaller"** slider (or click 30 / 40 / 50 / 60 / 70 %),
+set the max part size, and press **Start**. Progress is shown live and there is a Cancel button.
+
+### Command line
 
 ```powershell
 # split only → parts of ≤ 50 MB
@@ -29,6 +34,12 @@ compressor.exe "C:\Videos\holiday.mp4" --mode compress
 
 # compress, then split if still over 50 MB (default mode)
 compressor.exe "C:\Videos\holiday.mp4"
+
+# make it about 40% smaller (a range like 30-50 aims for the middle)
+compressor.exe "C:\Videos\holiday.mp4" --mode compress --reduce 40%
+
+# 50% smaller, then cut into 25 MB parts
+compressor.exe "C:\Videos\holiday.mp4" --reduce 50 --max-size 25MB
 
 # a whole folder, including sub-folders, 25 MB parts
 compressor.exe "C:\Videos" --recursive --max-size 25MB
@@ -47,12 +58,20 @@ Results go to `compressor_out\` next to the input (change with `--output`). Part
 | `-o, --output` | output folder |
 | `-r, --recursive` | include sub-folders |
 | `--codec` | `h264` (default) or `h265` |
+| `--reduce` | make the video this much smaller: `40`, `40%`, or `30-50` (aims for the middle). Replaces `--crf` |
 | `--crf` | quality, lower = better/bigger (default 26 for h264, 28 for h265) |
 | `--preset` | x264/x265 speed preset, default `medium` |
 | `--height` | downscale to at most this height (never upscales) |
 | `--audio-bitrate` | default `128k` |
 | `--encoder` | `cpu` (default, best quality per byte), `auto` (try GPU), `nvenc`, `qsv`, `amf` |
 | `--ffmpeg` | path to ffmpeg if it isn't on PATH |
+
+## How "make it X% smaller" works
+
+The tool calculates the bitrate that gives `original size × (1 − X%)` and encodes to it (two passes on the CPU
+encoder, so the result is accurate — typically within a couple of percent; GPU encoders use one pass and are
+looser). Already heavily compressed videos can't always shrink a lot without looking bad; very high percentages
+produce a warning.
 
 ## How splitting works
 

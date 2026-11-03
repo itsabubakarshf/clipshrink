@@ -4,17 +4,18 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use anyhow::{bail, Context, Result};
-use indicatif::ProgressBar;
 
-use crate::cli::Mode;
+use crate::cli::{EncoderKind, Mode};
 use crate::encode::EncodeSettings;
-use crate::ffmpeg::{Args, MediaInfo, Tools};
-use crate::util::fmt_size;
+use crate::ffmpeg::{Args, MediaInfo, Slice, Tools, Ui};
+use crate::util::{fmt_size, parse_bitrate};
 
 pub struct Options {
     pub mode: Mode,
     pub limit: u64,
     pub overwrite: bool,
+    /// Fraction of the original size to remove (compress/both), e.g. 0.4
+    pub reduce: Option<f64>,
     pub encode: EncodeSettings,
 }
 
@@ -32,7 +33,7 @@ pub fn process_file(
     opts: &Options,
     input: &Path,
     out_dir: &Path,
-    pb: &ProgressBar,
+    ui: &dyn Ui,
 ) -> Result<Outcome> {
     let info = tools.probe(input)?;
     fs::create_dir_all(out_dir)?;
@@ -53,8 +54,8 @@ pub fn process_file(
             if out.exists() && !opts.overwrite {
                 return Ok(Outcome::Skipped(format!("{} already exists (use --overwrite)", out.display())));
             }
-            pb.set_message(format!("compressing {stem}"));
-            let size = compress(tools, &opts.encode, input, &out, &info, pb)?;
+            ui.status(&format!("compressing {stem}"));
+            let size = compress(tools, opts, input, &out, &info, ui)?;
             Ok(Outcome::Done { in_size: info.size, out_size: size, parts: 1 })
         }
         Mode::Split => {
@@ -64,8 +65,8 @@ pub fn process_file(
             if !prepare_parts(out_dir, &out_stem, opts.overwrite)? {
                 return Ok(Outcome::Skipped("parts already exist (use --overwrite)".into()));
             }
-            pb.set_message(format!("splitting {stem}"));
-            let parts = split(tools, opts, input, &info, out_dir, &out_stem, &ext, pb)?;
+            ui.status(&format!("splitting {stem}"));
+            let parts = split(tools, opts, input, &info, out_dir, &out_stem, &ext, ui)?;
             Ok(summary(&info, &parts))
         }
         Mode::Both => {
@@ -74,15 +75,15 @@ pub fn process_file(
                 return Ok(Outcome::Skipped("output already exists (use --overwrite)".into()));
             }
             remove_parts(out_dir, &out_stem);
-            pb.set_message(format!("compressing {stem}"));
-            let size = compress(tools, &opts.encode, input, &out, &info, pb)?;
+            ui.status(&format!("compressing {stem}"));
+            let size = compress(tools, opts, input, &out, &info, ui)?;
             if size <= opts.limit {
                 return Ok(Outcome::Done { in_size: info.size, out_size: size, parts: 1 });
             }
             // Still too big: cut the compressed file (stream copy, no second re-encode).
-            pb.set_message(format!("splitting {stem}"));
+            ui.status(&format!("splitting {stem}"));
             let cinfo = tools.probe(&out)?;
-            let parts = split(tools, opts, &out, &cinfo, out_dir, &out_stem, "mp4", pb);
+            let parts = split(tools, opts, &out, &cinfo, out_dir, &out_stem, "mp4", ui);
             let _ = fs::remove_file(&out);
             Ok(summary(&info, &parts?))
         }
@@ -96,26 +97,70 @@ fn summary(info: &MediaInfo, parts: &[PathBuf]) -> Outcome {
 
 fn compress(
     tools: &Tools,
-    enc: &EncodeSettings,
+    opts: &Options,
     input: &Path,
     output: &Path,
     info: &MediaInfo,
-    pb: &ProgressBar,
+    ui: &dyn Ui,
 ) -> Result<u64> {
+    let mut enc = opts.encode.clone();
+    let mut two_pass = false;
+    if let Some(r) = opts.reduce {
+        let audio_bps = if info.has_audio { parse_bitrate(&enc.audio_bitrate).unwrap_or(128_000) } else { 0 };
+        // 1.5% headroom for container overhead.
+        let total_bps = info.size as f64 * (1.0 - r) * 0.985 * 8.0 / info.duration;
+        let video_bps = (total_bps - audio_bps as f64).max(64_000.0) as u64;
+        if total_bps - (audio_bps as f64) < 64_000.0 {
+            ui.log("  note: that reduction is very aggressive for this video; quality will be poor and the result may not reach the target");
+        }
+        enc.bitrate = Some(video_bps);
+        two_pass = enc.encoder == EncoderKind::Cpu; // exact size needs two passes on CPU
+    }
+
     let tmp = output.with_extension("part.mp4");
-    let args = Args::new()
-        .a("-i").a(input)
-        .many(["-map", "0:v:0", "-map", "0:a?"])
-        .many(enc.args().0)
-        .many(["-movflags", "+faststart"])
-        .a(&tmp);
-    if let Err(e) = tools.run(&args, info.duration, pb) {
+    let log_prefix = std::env::temp_dir().join(format!("compressor-{}-{}", std::process::id(), output.file_stem().and_then(|s| s.to_str()).unwrap_or("x")));
+    let cleanup = || {
         let _ = fs::remove_file(&tmp);
+        remove_pass_logs(&log_prefix);
+    };
+
+    let result = (|| -> Result<()> {
+        if two_pass {
+            let pass1 = Args::new()
+                .a("-i").a(input)
+                .many(["-map", "0:v:0", "-an"])
+                .many(enc.args().0)
+                .many(["-pass", "1", "-passlogfile"]).a(&log_prefix)
+                .many(["-f", "null", "-"]);
+            ui.status("analysing (pass 1/2)");
+            tools.run(&pass1, info.duration, &Slice { ui, lo: 0.0, hi: 0.4 })?;
+        }
+        let mut args = Args::new().a("-i").a(input).many(["-map", "0:v:0", "-map", "0:a?"]).many(enc.args().0);
+        if two_pass {
+            args = args.many(["-pass", "2", "-passlogfile"]).a(&log_prefix);
+            ui.status("encoding (pass 2/2)");
+        }
+        args = args.many(["-movflags", "+faststart"]).a(&tmp);
+        let (lo, hi) = if two_pass { (0.4, 1.0) } else { (0.0, 1.0) };
+        tools.run(&args, info.duration, &Slice { ui, lo, hi })
+    })();
+    remove_pass_logs(&log_prefix);
+    if let Err(e) = result {
+        cleanup();
         return Err(e);
     }
     let _ = fs::remove_file(output);
     fs::rename(&tmp, output)?;
     Ok(fs::metadata(output)?.len())
+}
+
+fn remove_pass_logs(prefix: &Path) {
+    let (Some(dir), Some(name)) = (prefix.parent(), prefix.file_name().and_then(|n| n.to_str())) else { return };
+    for e in fs::read_dir(dir).into_iter().flatten().flatten() {
+        if e.file_name().to_string_lossy().starts_with(name) {
+            let _ = fs::remove_file(e.path());
+        }
+    }
 }
 
 // ---------- splitting ----------
@@ -186,7 +231,7 @@ fn split(
     out_dir: &Path,
     stem: &str,
     ext: &str,
-    pb: &ProgressBar,
+    ui: &dyn Ui,
 ) -> Result<Vec<PathBuf>> {
     let limit = opts.limit as f64;
     let n = (info.size as f64 / (limit * TARGET_FILL)).ceil().max(2.0);
@@ -212,7 +257,7 @@ fn split(
         }
         args = args.a(&pattern);
 
-        if let Err(e) = tools.run(&args, info.duration, pb) {
+        if let Err(e) = tools.run(&args, info.duration, ui) {
             remove_parts(out_dir, stem);
             return Err(e);
         }
@@ -229,7 +274,7 @@ fn split(
         // Too big: shrink the segment length proportionally and retry.
         seg_time *= (limit / max as f64) * TARGET_FILL;
         if cut == Cut::Copy && (attempt >= 3 || seg_time < 2.0) {
-            pb.println(format!(
+            ui.log(&format!(
                 "  note: this video can't be cut small enough without re-encoding (long gaps between keyframes); \
                  re-encoding to hit {} per part",
                 fmt_size(opts.limit)

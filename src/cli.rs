@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use clap::{Parser, ValueEnum};
 
-use crate::util::parse_size;
+use crate::util::{parse_reduce, parse_size};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, ValueEnum)]
 pub enum Mode {
@@ -41,10 +41,10 @@ pub enum EncoderKind {
     version,
     about = "Split videos into size-limited parts and/or compress them (ffmpeg wrapper)",
     long_about = "Split videos into parts of at most --max-size and/or compress them.\n\
-                  Give it a video file or a folder. Run with no arguments for an interactive prompt."
+                  Give it a video file or a folder. Run with no arguments to open the window."
 )]
 pub struct Cli {
-    /// Video file or folder of videos (omit for interactive mode)
+    /// Video file or folder of videos (omit to open the window)
     pub input: Option<PathBuf>,
 
     /// What to do
@@ -66,6 +66,11 @@ pub struct Cli {
     /// Video codec used when compressing
     #[arg(long, value_enum, default_value_t = Codec::H264)]
     pub codec: Codec,
+
+    /// Make the video this much smaller, e.g. 40, 40% or 30-50 (aims for the middle).
+    /// Used when compressing; replaces --crf
+    #[arg(long, value_parser = parse_reduce, value_name = "PERCENT")]
+    pub reduce: Option<f64>,
 
     /// Quality (lower = better/bigger). Default 26 for H.264, 28 for H.265
     #[arg(long)]

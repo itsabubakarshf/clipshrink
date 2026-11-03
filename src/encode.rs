@@ -11,6 +11,8 @@ pub struct EncodeSettings {
     pub preset: String,
     pub height: Option<u32>,
     pub audio_bitrate: String,
+    /// Target video bitrate (bits/s). When set, used instead of CRF quality.
+    pub bitrate: Option<u64>,
 }
 
 impl EncodeSettings {
@@ -32,11 +34,15 @@ impl EncodeSettings {
             a = a.many(["-vf", &format!("scale=-2:min({h}\\,ih)")]);
         }
 
-        a = match self.encoder {
-            EncoderKind::Nvenc => a.many(["-c:v", name, "-preset", "p5", "-rc", "vbr", "-cq", &q, "-b:v", "0"]),
-            EncoderKind::Qsv => a.many(["-c:v", name, "-global_quality", &q]),
-            EncoderKind::Amf => a.many(["-c:v", name, "-rc", "cqp", "-qp_i", &q, "-qp_p", &q]),
-            _ => a.many(["-c:v", name, "-preset", &self.preset, "-crf", &q]),
+        a = match (self.encoder, self.bitrate) {
+            (EncoderKind::Nvenc, Some(b)) => a.many(["-c:v", name, "-preset", "p5", "-rc", "vbr", "-b:v", &b.to_string()]),
+            (EncoderKind::Qsv, Some(b)) => a.many(["-c:v", name, "-b:v", &b.to_string()]),
+            (EncoderKind::Amf, Some(b)) => a.many(["-c:v", name, "-rc", "vbr_peak", "-b:v", &b.to_string()]),
+            (_, Some(b)) => a.many(["-c:v", name, "-preset", &self.preset, "-b:v", &b.to_string()]),
+            (EncoderKind::Nvenc, None) => a.many(["-c:v", name, "-preset", "p5", "-rc", "vbr", "-cq", &q, "-b:v", "0"]),
+            (EncoderKind::Qsv, None) => a.many(["-c:v", name, "-global_quality", &q]),
+            (EncoderKind::Amf, None) => a.many(["-c:v", name, "-rc", "cqp", "-qp_i", &q, "-qp_p", &q]),
+            (_, None) => a.many(["-c:v", name, "-preset", &self.preset, "-crf", &q]),
         };
         a = a.many(["-pix_fmt", "yuv420p"]);
         if self.codec == Codec::H265 {

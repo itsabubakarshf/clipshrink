@@ -8,6 +8,7 @@ license = "MIT"
 [dependencies]
 anyhow = "1"
 clap = { version = "4", features = ["derive"] }
+eframe = { version = "0.37.0", default-features = false, features = ["glow", "default_fonts", "x11", "wayland"] }
 indicatif = "0.17"
 serde_json = "1"
 walkdir = "2"
@@ -17,3 +18,6 @@ opt-level = 3
 lto = true
 codegen-units = 1
 strip = true
+
+[target."cfg(windows)".dependencies]
+rfd = "0.17.2"
