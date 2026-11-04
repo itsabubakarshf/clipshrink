@@ -10,11 +10,13 @@ Works on a single file or a whole folder.
 
 ## Install
 
-**Step-by-step guide for Windows, Ubuntu and macOS: [SETUP.md](SETUP.md).**
+**Full step-by-step guide (how to download the exe, install ffmpeg, use it, and all settings) for Windows,
+Ubuntu and macOS: [SETUP.md](SETUP.md).**
 
-In short: install ffmpeg (`winget install Gyan.FFmpeg` / `sudo apt install ffmpeg` / `brew install ffmpeg`), download
-`compressor` for your system from the Releases page (or the Actions artifacts), and run it — with no arguments it
-opens a window.
+In short: download the program for your system from the
+[Releases page](https://github.com/itsabubakarshf/compressor/releases) (`compressor-windows.exe`,
+`compressor-linux`, `compressor-macos`), install ffmpeg (`winget install Gyan.FFmpeg` /
+`sudo apt install ffmpeg` / `brew install ffmpeg`), and run it — with no arguments it opens a window.
 
 ## Usage
 

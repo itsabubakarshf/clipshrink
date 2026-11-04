@@ -47,8 +47,30 @@ jobs:
         with:
           name: ${{ matrix.artifact }}
           path: dist/*
-      - name: Attach to release
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v2
+
+  # Publishes the three programs on the repo's "Releases" page.
+  #  - every push        -> a pre-release called "latest" (always the newest build)
+  #  - a tag like v0.1.0 -> a normal release with that name
+  release:
+    needs: build
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
         with:
+          path: dist
+          merge-multiple: true
+      - name: Move the "latest" tag to this commit
+        if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+        run: |
+          git tag -f latest
+          git push -f origin refs/tags/latest
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || 'latest' }}
+          name: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || 'Latest build' }}
+          prerelease: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+          target_commitish: ${{ github.sha }}
+          body: "Download the file for your system: compressor-windows.exe (Windows), compressor-linux (Ubuntu/Linux), compressor-macos (Mac, Apple Silicon). See SETUP.md for the step-by-step guide."
           files: dist/*
