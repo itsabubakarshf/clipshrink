@@ -53,10 +53,6 @@ files on the repository's **Releases** page.
 > **Artifacts** at the bottom → click `clipshrink-windows` / `clipshrink-linux` / `clipshrink-macos`. You must be
 > logged in to GitHub, and you get a `.zip` — right-click → **Extract All** to get the program out of it.
 
-> **Where does the code live?** Currently on the branch `claude/video-compression-splitting-ii43jb`. To make the
-> repo page show it by default, merge that branch into `main` (on GitHub: **Pull requests → New pull request**,
-> base `main`, compare `claude/video-compression-splitting-ii43jb`, then **Merge**). The downloads work either way.
-
 #### Using the Windows installer
 1. Double-click `ClipShrink-Setup-windows.exe`. It installs just for you — no administrator rights needed.
 2. The first page, **"Before you install"**, explains that the program needs **ffmpeg** and your three options.
@@ -93,7 +89,7 @@ You need **Git** and **Rust** (the programming language the tool is written in).
 winget install Git.Git
 winget install Rustlang.Rustup
 # close PowerShell and open it again, then:
-git clone -b claude/video-compression-splitting-ii43jb https://github.com/itsabubakarshf/clipshrink
+git clone https://github.com/itsabubakarshf/clipshrink
 cd clipshrink
 cargo build --release
 ```
@@ -106,7 +102,7 @@ workload and retry.)
 sudo apt update
 sudo apt install -y build-essential pkg-config git curl
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh      # press Enter to accept defaults, then reopen the terminal
-git clone -b claude/video-compression-splitting-ii43jb https://github.com/itsabubakarshf/clipshrink
+git clone https://github.com/itsabubakarshf/clipshrink
 cd clipshrink
 cargo build --release
 ```
@@ -116,14 +112,13 @@ Program: `target/release/clipshrink`.
 ```bash
 xcode-select --install
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh      # press Enter to accept defaults, then reopen Terminal
-git clone -b claude/video-compression-splitting-ii43jb https://github.com/itsabubakarshf/clipshrink
+git clone https://github.com/itsabubakarshf/clipshrink
 cd clipshrink
 cargo build --release
 ```
 Program: `target/release/clipshrink`.
 
-(Once the branch is merged into `main`, you can leave out `-b claude/video-compression-splitting-ii43jb`.
-To update later: `git pull` and `cargo build --release` again.)
+(To update later: `git pull` and `cargo build --release` again.)
 
 ---
 
