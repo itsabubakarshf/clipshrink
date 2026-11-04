@@ -22,14 +22,14 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-            artifact: compressor-windows
-            bin: compressor.exe
+            artifact: clipshrink-windows
+            bin: clipshrink.exe
           - os: ubuntu-latest
-            artifact: compressor-linux
-            bin: compressor
+            artifact: clipshrink-linux
+            bin: clipshrink
           - os: macos-latest
-            artifact: compressor-macos
-            bin: compressor
+            artifact: clipshrink-macos
+            bin: clipshrink
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -39,18 +39,18 @@ jobs:
         run: |
           mkdir dist
           case "${{ matrix.artifact }}" in
-            compressor-windows) cp target/release/compressor.exe dist/VideoCompressor-portable-windows.exe ;;
-            compressor-linux)   cp target/release/compressor dist/compressor-linux && chmod +x dist/compressor-linux ;;
-            compressor-macos)   cp target/release/compressor dist/compressor-macos && chmod +x dist/compressor-macos ;;
+            clipshrink-windows) cp target/release/clipshrink.exe dist/ClipShrink-portable-windows.exe ;;
+            clipshrink-linux)   cp target/release/clipshrink dist/clipshrink-linux && chmod +x dist/clipshrink-linux ;;
+            clipshrink-macos)   cp target/release/clipshrink dist/clipshrink-macos && chmod +x dist/clipshrink-macos ;;
           esac
       - name: Build the Windows installer
-        if: matrix.artifact == 'compressor-windows'
+        if: matrix.artifact == 'clipshrink-windows'
         shell: pwsh
         run: |
           $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
           if (-not (Test-Path $iscc)) { choco install innosetup -y --no-progress }
           $v = (Select-String -Path Cargo.toml -Pattern '^version = "(.*)"').Matches[0].Groups[1].Value
-          & $iscc "/DMyAppVersion=$v" installer\compressor.iss
+          & $iscc "/DMyAppVersion=$v" installer\clipshrink.iss
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           Get-ChildItem dist
       - uses: actions/upload-artifact@v4
@@ -87,5 +87,5 @@ jobs:
           name: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || 'Latest build' }}
           prerelease: ${{ !startsWith(github.ref, 'refs/tags/v') }}
           target_commitish: ${{ github.sha }}
-          body: "Windows: VideoCompressor-Setup-windows.exe (installer) or VideoCompressor-portable-windows.exe (portable, no install). Ubuntu/Linux: compressor-linux. Mac (Apple Silicon): compressor-macos. See SETUP.md for the step-by-step guide."
+          body: "Windows: ClipShrink-Setup-windows.exe (installer) or ClipShrink-portable-windows.exe (portable, no install). Ubuntu/Linux: clipshrink-linux. Mac (Apple Silicon): clipshrink-macos. See SETUP.md for the step-by-step guide."
           files: dist/*

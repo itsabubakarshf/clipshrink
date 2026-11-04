@@ -206,7 +206,7 @@ impl eframe::App for App {
         let running = self.running();
         egui::CentralPanel::default().show(ui, |ui| {
             egui::ScrollArea::vertical().show(ui, |ui| {
-                ui.heading("Video Compressor");
+                ui.heading("ClipShrink");
                 ui.label("Make videos smaller, or cut them into parts that fit an upload limit.");
                 ui.separator();
 
@@ -298,7 +298,7 @@ impl eframe::App for App {
                     ui.checkbox(&mut self.overwrite, "Replace existing results");
                     ui.horizontal(|ui| {
                         ui.label("Output folder");
-                        ui.add(egui::TextEdit::singleline(&mut self.output).desired_width(ui.available_width()).hint_text("default: “compressor_out” next to the video"));
+                        ui.add(egui::TextEdit::singleline(&mut self.output).desired_width(ui.available_width()).hint_text("default: “clipshrink_out” next to the video"));
                     });
                 });
 
@@ -390,7 +390,7 @@ pub fn run() -> i32 {
         },
         ..Default::default()
     };
-    match eframe::run_native("Video Compressor", options, Box::new(|cc| Ok(Box::new(App::new(cc))))) {
+    match eframe::run_native("ClipShrink", options, Box::new(|cc| Ok(Box::new(App::new(cc))))) {
         Ok(()) => 0,
         Err(e) => {
             eprintln!("could not open the window: {e}");

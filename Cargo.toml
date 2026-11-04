@@ -1,9 +1,9 @@
 [package]
-name = "compressor"
+name = "clipshrink"
 version = "0.2.0"
 edition = "2021"
 description = "Shrink videos by a percentage or split them into upload-size parts - desktop app and CLI built on ffmpeg"
-repository = "https://github.com/itsabubakarshf/compressor"
+repository = "https://github.com/itsabubakarshf/clipshrink"
 license = "MIT"
 
 [dependencies]

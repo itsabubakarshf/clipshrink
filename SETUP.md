@@ -1,14 +1,14 @@
 # Setup guide
 
-**What is this?** `compressor` is a small program that makes videos smaller and/or cuts them into parts
-(for example 50 MB each). It is one single file — `VideoCompressor-portable-windows.exe` on Windows,
-`compressor-linux` on Ubuntu, `compressor-macos` on Mac — and it uses **ffmpeg** (a free video tool) to do the work.
+**What is this?** **ClipShrink** is a small program that makes videos smaller and/or cuts them into parts
+(for example 50 MB each). It is one single file — `ClipShrink-portable-windows.exe` on Windows,
+`clipshrink-linux` on Ubuntu, `clipshrink-macos` on Mac — and it uses **ffmpeg** (a free video tool) to do the work.
 
 You need two things on your computer:
 
 | # | What | Where it comes from |
 |---|---|---|
-| 1 | **The compressor program** (the `.exe` on Windows) | Downloaded from this GitHub repository — [Part 1](#part-1--get-the-program-the-exe-file) |
+| 1 | **The ClipShrink program** (the `.exe` on Windows) | Downloaded from this GitHub repository — [Part 1](#part-1--get-the-program-the-exe-file) |
 | 2 | **ffmpeg** | Installed with one command — [Part 2](#part-2--install-ffmpeg) |
 
 Then [Part 3](#part-3--use-it) shows how to use it and [Part 4](#part-4--settings-what-you-can-change) lists the settings.
@@ -25,32 +25,32 @@ There is **nothing to configure or compile** if you use the download. (You *can*
 GitHub builds the program for Windows, Ubuntu and Mac automatically every time the code changes and puts the
 files on the repository's **Releases** page.
 
-1. Open the repository in your browser: <https://github.com/itsabubakarshf/compressor>
+1. Open the repository in your browser: <https://github.com/itsabubakarshf/clipshrink>
 2. Open the Releases page: either click **Releases** in the right-hand column of the repo page, or go directly to
-   <https://github.com/itsabubakarshf/compressor/releases>
+   <https://github.com/itsabubakarshf/clipshrink/releases>
 3. Click the newest entry — it is called **Latest build** (or a version number like `v0.1.0` once you publish one).
 4. Scroll down to **Assets** and click the file for your computer:
 
    | Your computer | Download this file |
    |---|---|
-   | **Windows — installer (recommended)** | `VideoCompressor-Setup-windows.exe` |
-   | **Windows — portable (no install)** | `VideoCompressor-portable-windows.exe` |
-   | **Ubuntu / Linux** | `compressor-linux` |
-   | **Mac** (M1/M2/M3/M4) | `compressor-macos` |
+   | **Windows — installer (recommended)** | `ClipShrink-Setup-windows.exe` |
+   | **Windows — portable (no install)** | `ClipShrink-portable-windows.exe` |
+   | **Ubuntu / Linux** | `clipshrink-linux` |
+   | **Mac** (M1/M2/M3/M4) | `clipshrink-macos` |
 
    (Ignore "Source code (zip)" / "Source code (tar.gz)" — that is the program's code, not the program.)
 
    **Installer or portable?** The installer adds a Start-menu entry (and optional desktop shortcut), can be uninstalled
    from Windows Settings, and walks you through getting ffmpeg. The portable file is the same program: put it anywhere
    and double-click it — nothing is installed.
-5. **Installer:** double-click `VideoCompressor-Setup-windows.exe` and follow the wizard (see
+5. **Installer:** double-click `ClipShrink-Setup-windows.exe` and follow the wizard (see
    [Using the Windows installer](#using-the-windows-installer) below). **Portable:** save the file somewhere you will
    remember, e.g. `C:\Tools`, and double-click it.
 
 > **The Releases page is empty / has no "Latest build"?** The build runs automatically after the code is pushed
 > and takes about 5–10 minutes. Meanwhile (or if a build failed) you can grab the files from the **Actions** tab:
-> open <https://github.com/itsabubakarshf/compressor/actions> → click the newest run with a green ✔ → scroll to
-> **Artifacts** at the bottom → click `compressor-windows` / `compressor-linux` / `compressor-macos`. You must be
+> open <https://github.com/itsabubakarshf/clipshrink/actions> → click the newest run with a green ✔ → scroll to
+> **Artifacts** at the bottom → click `clipshrink-windows` / `clipshrink-linux` / `clipshrink-macos`. You must be
 > logged in to GitHub, and you get a `.zip` — right-click → **Extract All** to get the program out of it.
 
 > **Where does the code live?** Currently on the branch `claude/video-compression-splitting-ii43jb`. To make the
@@ -58,14 +58,14 @@ files on the repository's **Releases** page.
 > base `main`, compare `claude/video-compression-splitting-ii43jb`, then **Merge**). The downloads work either way.
 
 #### Using the Windows installer
-1. Double-click `VideoCompressor-Setup-windows.exe`. It installs just for you — no administrator rights needed.
+1. Double-click `ClipShrink-Setup-windows.exe`. It installs just for you — no administrator rights needed.
 2. The first page, **"Before you install"**, explains that the program needs **ffmpeg** and your three options.
 3. Choose the folder (the default is fine) and click **Next**.
 4. On **Select Additional Tasks**, leave **"Download ffmpeg now"** ticked (recommended; needs an internet connection).
    Optionally tick the desktop shortcut.
 5. Click **Install**. When the files are copied, a small window downloads ffmpeg (about 100–200 MB, a few minutes, one time)
    and closes by itself when it's done.
-6. Click **Finish** — the app opens. Start-menu entries: *Video Compressor*, *Set up ffmpeg (download)* (re-run
+6. Click **Finish** — the app opens. Start-menu entries: *ClipShrink*, *Set up ffmpeg (download)* (re-run
    the download any time) and *Uninstall*.
    Uninstalling also removes the ffmpeg it downloaded.
 
@@ -78,9 +78,9 @@ Chrome/Edge may say the file *"isn't commonly downloaded"* → click **Keep**. W
 #### Ubuntu / Mac: make it runnable
 Open a terminal in the folder where you saved it and run (use your file's name):
 ```bash
-chmod +x compressor-linux          # Ubuntu
-chmod +x compressor-macos          # Mac
-xattr -d com.apple.quarantine compressor-macos     # Mac only: removes the "unverified developer" block
+chmod +x clipshrink-linux          # Ubuntu
+chmod +x clipshrink-macos          # Mac
+xattr -d com.apple.quarantine clipshrink-macos     # Mac only: removes the "unverified developer" block
 ```
 
 ### Option B — Build the exe yourself
@@ -93,11 +93,11 @@ You need **Git** and **Rust** (the programming language the tool is written in).
 winget install Git.Git
 winget install Rustlang.Rustup
 # close PowerShell and open it again, then:
-git clone -b claude/video-compression-splitting-ii43jb https://github.com/itsabubakarshf/compressor
-cd compressor
+git clone -b claude/video-compression-splitting-ii43jb https://github.com/itsabubakarshf/clipshrink
+cd clipshrink
 cargo build --release
 ```
-Your program is now at `compressor\target\release\compressor.exe` — copy it wherever you like.
+Your program is now at `clipshrink\target\release\clipshrink.exe` — copy it wherever you like.
 (If it complains about a linker, install *Build Tools for Visual Studio* with the **Desktop development with C++**
 workload and retry.)
 
@@ -106,21 +106,21 @@ workload and retry.)
 sudo apt update
 sudo apt install -y build-essential pkg-config git curl
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh      # press Enter to accept defaults, then reopen the terminal
-git clone -b claude/video-compression-splitting-ii43jb https://github.com/itsabubakarshf/compressor
-cd compressor
+git clone -b claude/video-compression-splitting-ii43jb https://github.com/itsabubakarshf/clipshrink
+cd clipshrink
 cargo build --release
 ```
-Program: `target/release/compressor`.
+Program: `target/release/clipshrink`.
 
 **Mac**:
 ```bash
 xcode-select --install
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh      # press Enter to accept defaults, then reopen Terminal
-git clone -b claude/video-compression-splitting-ii43jb https://github.com/itsabubakarshf/compressor
-cd compressor
+git clone -b claude/video-compression-splitting-ii43jb https://github.com/itsabubakarshf/clipshrink
+cd clipshrink
 cargo build --release
 ```
-Program: `target/release/compressor`.
+Program: `target/release/clipshrink`.
 
 (Once the branch is merged into `main`, you can leave out `-b claude/video-compression-splitting-ii43jb`.
 To update later: `git pull` and `cargo build --release` again.)
@@ -129,13 +129,13 @@ To update later: `git pull` and `cargo build --release` again.)
 
 ## Part 2 — ffmpeg (the video engine)
 
-The compressor needs ffmpeg. **On Windows you usually don't have to do anything:**
+ClipShrink needs ffmpeg. **On Windows you usually don't have to do anything:**
 
 1. The program looks for ffmpeg by itself — next to the program, on your PATH, and in the usual places
    (including an unzipped `ffmpeg…` folder in Downloads / Desktop / Documents, winget, Chocolatey, Scoop).
 2. If it still can't find it, the window shows two buttons the first time you press **Start**:
    - **Download ffmpeg automatically** — one click, about 100–200 MB, saved once in your user folder
-     (`%LOCALAPPDATA%\compressor\ffmpeg`), no admin rights needed. You are never asked again.
+     (`%LOCALAPPDATA%\clipshrink\ffmpeg`), no admin rights needed. You are never asked again.
    - **I already have ffmpeg — locate its folder…** — pick the folder that contains `ffmpeg.exe` and `ffprobe.exe`
      (it's usually called `bin`). The choice is remembered.
    
@@ -154,7 +154,7 @@ ffmpeg -version
 ```
 A version number means it worked. *No `winget`?* Download "release essentials" from
 <https://www.gyan.dev/ffmpeg/builds/>, unzip it, and copy `ffmpeg.exe` and `ffprobe.exe` (from its `bin` folder) into the
-**same folder as the compressor exe** — the program finds them there automatically.
+**same folder as the ClipShrink exe** — the program finds them there automatically.
 
 **Ubuntu / Linux**:
 ```bash
@@ -176,8 +176,8 @@ ffmpeg -version
 
 ### The window (easiest)
 
-- **Windows:** double-click the Start-menu entry *Video Compressor* (installer) or the portable `.exe`.
-- **Ubuntu / Mac:** open a terminal in the folder and run `./compressor-linux` (or `./compressor-macos`) with nothing after it.
+- **Windows:** double-click the Start-menu entry *ClipShrink* (installer) or the portable `.exe`.
+- **Ubuntu / Mac:** open a terminal in the folder and run `./clipshrink-linux` (or `./clipshrink-macos`) with nothing after it.
 
 Then:
 1. **Choose a video or folder** — drag it onto the window, paste its path, or (Windows) click *Choose file… / Choose folder…*.
@@ -185,38 +185,38 @@ Then:
 3. **How much smaller?** — drag the slider or click 30 / 40 / 50 / 60 / 70 %.
 4. **Maximum size of each part** — 50 MB by default (only for splitting).
 5. Press **Start**. A progress bar shows how it's going; **Cancel** stops it.
-6. When it says *Done*, click **Open output folder**. The results are in a folder called `compressor_out` next to your original
+6. When it says *Done*, click **Open output folder**. The results are in a folder called `clipshrink_out` next to your original
    video. Your original is never changed.
 
 ### The command line
 
-(The examples say `compressor.exe`. If you used the portable download, that is `VideoCompressor-portable-windows.exe` — rename it or use its name. With the installer the program is in `%LOCALAPPDATA%\Programs\Video Compressor\compressor.exe`.)
+(The examples say `clipshrink.exe`. If you used the portable download, that is `ClipShrink-portable-windows.exe` — rename it or use its name. With the installer the program is in `%LOCALAPPDATA%\Programs\ClipShrink\clipshrink.exe`.)
 
 Open **PowerShell** (Windows) or a terminal (Ubuntu/Mac), go to the folder containing the program
-(`cd C:\Tools`), and run it with the path to your video or folder. Windows examples (on Ubuntu/Mac use `./compressor-linux`
-or `./compressor-macos` instead of `.\compressor.exe`, and `/` paths):
+(`cd C:\Tools`), and run it with the path to your video or folder. Windows examples (on Ubuntu/Mac use `./clipshrink-linux`
+or `./clipshrink-macos` instead of `.\clipshrink.exe`, and `/` paths):
 
 ```powershell
 # cut into parts of at most 50 MB (no quality loss, very fast)
-.\compressor.exe "C:\Videos\holiday.mp4" --mode split
+.\clipshrink.exe "C:\Videos\holiday.mp4" --mode split
 
 # make it about 40% smaller, one file
-.\compressor.exe "C:\Videos\holiday.mp4" --mode compress --reduce 40%
+.\clipshrink.exe "C:\Videos\holiday.mp4" --mode compress --reduce 40%
 
 # 50% smaller, then cut into 25 MB parts if still too big
-.\compressor.exe "C:\Videos\holiday.mp4" --reduce 50 --max-size 25MB
+.\clipshrink.exe "C:\Videos\holiday.mp4" --reduce 50 --max-size 25MB
 
 # every video in a folder (and its sub-folders)
-.\compressor.exe "C:\Videos" --recursive --reduce 40
+.\clipshrink.exe "C:\Videos" --recursive --reduce 40
 
 # list every option
-.\compressor.exe --help
+.\clipshrink.exe --help
 ```
 Tip (Windows): Shift + right-click a file in Explorer → **Copy as path** gives you the quoted path to paste.
 Tip (Mac): drag a file from Finder into the Terminal window to paste its path.
 
-*Want to run it from any folder just by typing `compressor`?* Put the program in a folder that is on your PATH
-(Linux/Mac: `/usr/local/bin`, e.g. `sudo mv compressor-linux /usr/local/bin/compressor`; Windows: add `C:\Tools` to
+*Want to run it from any folder just by typing `clipshrink`?* Put the program in a folder that is on your PATH
+(Linux/Mac: `/usr/local/bin`, e.g. `sudo mv clipshrink-linux /usr/local/bin/clipshrink`; Windows: add `C:\Tools` to
 the PATH in *Settings → System → About → Advanced system settings → Environment Variables*).
 
 ---
@@ -236,7 +236,7 @@ There is no config file. Everything is chosen in the window, or with options on 
 | Advanced → fixed quality | `--crf 26` | Instead of a percentage, use a quality number (lower = better and bigger) |
 | Advanced → Include sub-folders | `--recursive` | Also process videos inside sub-folders |
 | Advanced → Replace existing results | `--overwrite` | Redo files that already have results |
-| Advanced → Output folder | `--output "D:\Out"` | Where to put results (default `compressor_out` next to the video) |
+| Advanced → Output folder | `--output "D:\Out"` | Where to put results (default `clipshrink_out` next to the video) |
 | — | `--preset fast` | Speed vs. size on the CPU encoder (`ultrafast` … `veryslow`, default `medium`) |
 | — | `--ffmpeg "C:\path\ffmpeg.exe"` | Use a specific ffmpeg if it is not found automatically |
 
@@ -254,13 +254,13 @@ There is no config file. Everything is chosen in the window, or with options on 
 |---|---|
 | `ffmpeg/ffprobe not found` | On Windows use the **Download** / **locate** buttons (Part 2). Otherwise ffmpeg isn't installed, or the terminal was opened before installing it. Close and reopen the terminal and check `ffmpeg -version`. Or put `ffmpeg`/`ffprobe` next to the program, or use `--ffmpeg <path>`. |
 | Windows: "Windows protected your PC" | **More info → Run anyway** (the program isn't code-signed). |
-| Mac: "cannot be opened because the developer cannot be verified" | `xattr -d com.apple.quarantine compressor-macos`, or **System Settings → Privacy & Security → Open Anyway**. |
+| Mac: "cannot be opened because the developer cannot be verified" | `xattr -d com.apple.quarantine clipshrink-macos`, or **System Settings → Privacy & Security → Open Anyway**. |
 | Linux/Mac: "Permission denied" | `chmod +x <file>`. |
 | Linux: window doesn't open / `libxkbcommon-x11.so could not be loaded` | `sudo apt install libxkbcommon-x11-0 libgl1 libegl1`, and run it inside a desktop session (not plain SSH). |
 | Releases page has nothing to download | Wait for the build to finish (Actions tab), or use the Actions artifacts / build it yourself (Option B above). |
 | Parts are smaller than the limit | Normal: videos are cut on keyframes, so a part can't be exactly 50 MB. They are never larger than the limit. |
-| `skipped: … already exists` | Results from an earlier run are in `compressor_out`. Tick *Replace existing results* / use `--overwrite`. |
-| Lots of black command windows flash up | Fixed in the current build (they're hidden). Download the newest `VideoCompressor-portable-windows.exe` from Releases. |
+| `skipped: … already exists` | Results from an earlier run are in `clipshrink_out`. Tick *Replace existing results* / use `--overwrite`. |
+| Lots of black command windows flash up | Fixed in the current build (they're hidden). Download the newest `ClipShrink-portable-windows.exe` from Releases. |
 | Compression is slow | See "It's slow" above. Hitting an exact size on the CPU encodes the video twice, so it takes about twice as long. |
 
 ---

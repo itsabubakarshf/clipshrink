@@ -8,7 +8,7 @@ fn have_ffmpeg() -> bool {
 }
 
 fn tmpdir(name: &str) -> PathBuf {
-    let d = std::env::temp_dir().join(format!("compressor-test-{name}-{}", std::process::id()));
+    let d = std::env::temp_dir().join(format!("clipshrink-test-{name}-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&d);
     std::fs::create_dir_all(&d).unwrap();
     d
@@ -27,7 +27,7 @@ fn make_video(path: &Path, keyint: u32) {
 }
 
 fn run(args: &[&str]) -> std::process::Output {
-    Command::new(env!("CARGO_BIN_EXE_compressor")).args(args).output().unwrap()
+    Command::new(env!("CARGO_BIN_EXE_clipshrink")).args(args).output().unwrap()
 }
 
 fn outputs(dir: &Path) -> Vec<(String, u64)> {
@@ -63,12 +63,12 @@ fn split_respects_limit_and_keeps_all_content() {
     let out = run(&[video.to_str().unwrap(), "--mode", "split", "--max-size", "2MB"]);
     assert!(out.status.success(), "{}", String::from_utf8_lossy(&out.stderr));
 
-    let files = outputs(&d.join("compressor_out"));
+    let files = outputs(&d.join("clipshrink_out"));
     assert!(files.len() >= 2, "{files:?}");
     let mut dur = 0.0;
     for (name, size) in &files {
         assert!(*size <= 2_000_000, "{name} is {size} bytes");
-        dur += duration(&d.join("compressor_out").join(name));
+        dur += duration(&d.join("clipshrink_out").join(name));
     }
     assert!((dur - 40.0).abs() < 1.5, "parts sum to {dur}s");
 }
@@ -83,7 +83,7 @@ fn split_falls_back_to_reencode_with_sparse_keyframes() {
     make_video(&video, 1000); // a single keyframe -> copy can't cut
     let out = run(&[video.to_str().unwrap(), "--mode", "split", "--max-size", "2MB", "--preset", "ultrafast"]);
     assert!(out.status.success(), "{}", String::from_utf8_lossy(&out.stderr));
-    for (name, size) in outputs(&d.join("compressor_out")) {
+    for (name, size) in outputs(&d.join("clipshrink_out")) {
         assert!(size <= 2_000_000, "{name} is {size} bytes");
     }
 }
@@ -99,7 +99,7 @@ fn compress_only_makes_single_smaller_file() {
     let before = std::fs::metadata(&video).unwrap().len();
     let out = run(&[video.to_str().unwrap(), "--mode", "compress", "--crf", "35", "--height", "240", "--preset", "ultrafast"]);
     assert!(out.status.success(), "{}", String::from_utf8_lossy(&out.stderr));
-    let files = outputs(&d.join("compressor_out"));
+    let files = outputs(&d.join("clipshrink_out"));
     assert_eq!(files.len(), 1, "{files:?}");
     assert!(files[0].1 < before);
 }
@@ -114,7 +114,7 @@ fn both_mode_on_folder() {
     make_video(&d.join("b.mp4"), 25);
     let out = run(&[d.to_str().unwrap(), "--max-size", "500KB", "--crf", "32", "--height", "240", "--preset", "ultrafast"]);
     assert!(out.status.success(), "{}", String::from_utf8_lossy(&out.stderr));
-    let files = outputs(&d.join("compressor_out"));
+    let files = outputs(&d.join("clipshrink_out"));
     assert!(files.iter().any(|(n, _)| n.starts_with("a_part")), "{files:?}");
     for (name, size) in files {
         assert!(size <= 500_000, "{name} is {size}");
@@ -136,7 +136,7 @@ fn reduce_hits_requested_percentage() {
     let before = std::fs::metadata(&video).unwrap().len() as f64;
     let out = run(&[video.to_str().unwrap(), "--mode", "compress", "--reduce", "40%", "--preset", "ultrafast"]);
     assert!(out.status.success(), "{}", String::from_utf8_lossy(&out.stderr));
-    let files = outputs(&d.join("compressor_out"));
+    let files = outputs(&d.join("clipshrink_out"));
     assert_eq!(files.len(), 1, "{files:?}");
     let saved = 100.0 * (1.0 - files[0].1 as f64 / before);
     assert!((32.0..=48.0).contains(&saved), "saved {saved:.1}%");

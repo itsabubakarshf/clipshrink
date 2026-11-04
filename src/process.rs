@@ -118,7 +118,7 @@ fn compress(
     }
 
     let tmp = output.with_extension("part.mp4");
-    let log_prefix = std::env::temp_dir().join(format!("compressor-{}-{}", std::process::id(), output.file_stem().and_then(|s| s.to_str()).unwrap_or("x")));
+    let log_prefix = std::env::temp_dir().join(format!("clipshrink-{}-{}", std::process::id(), output.file_stem().and_then(|s| s.to_str()).unwrap_or("x")));
     let cleanup = || {
         let _ = fs::remove_file(&tmp);
         remove_pass_logs(&log_prefix);

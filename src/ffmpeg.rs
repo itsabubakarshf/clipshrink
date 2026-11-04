@@ -24,11 +24,11 @@ pub fn data_dir() -> Option<PathBuf> {
     }
     let var = |k: &str| std::env::var_os(k).map(PathBuf::from);
     if cfg!(windows) {
-        var("LOCALAPPDATA").map(|p| p.join("compressor").join("ffmpeg"))
+        var("LOCALAPPDATA").map(|p| p.join("clipshrink").join("ffmpeg"))
     } else if cfg!(target_os = "macos") {
-        var("HOME").map(|p| p.join("Library/Application Support/compressor/ffmpeg"))
+        var("HOME").map(|p| p.join("Library/Application Support/clipshrink/ffmpeg"))
     } else {
-        var("XDG_DATA_HOME").or_else(|| var("HOME").map(|h| h.join(".local/share"))).map(|p| p.join("compressor/ffmpeg"))
+        var("XDG_DATA_HOME").or_else(|| var("HOME").map(|h| h.join(".local/share"))).map(|p| p.join("clipshrink/ffmpeg"))
     }
 }
 
@@ -181,6 +181,10 @@ impl Tools {
             }
             if let Some(d) = data_dir() {
                 candidates.push(pair_in(&d));
+                // folder name used by early test builds
+                if let Some(parent) = d.parent().and_then(|p| p.parent()) {
+                    candidates.push(pair_in(&parent.join("compressor").join("ffmpeg")));
+                }
             }
             candidates.push((PathBuf::from("ffmpeg"), PathBuf::from("ffprobe")));
             for d in well_known_dirs() {
@@ -407,7 +411,7 @@ mod tests {
 
     #[test]
     fn finds_unzipped_download_and_remembered_folder() {
-        let root = std::env::temp_dir().join(format!("compressor-scan-{}", std::process::id()));
+        let root = std::env::temp_dir().join(format!("clipshrink-scan-{}", std::process::id()));
         let bin = root.join("Downloads/ffmpeg-2026-11-02-git-abc-essentials_build/bin");
         std::fs::create_dir_all(&bin).unwrap();
         std::fs::write(bin.join(exe("ffmpeg")), b"x").unwrap();

@@ -1,7 +1,7 @@
-Video Compressor - before you install
+ClipShrink - before you install
 =====================================
 
-Video Compressor makes videos smaller and/or cuts them into parts that fit an
+ClipShrink makes videos smaller and/or cuts them into parts that fit an
 upload limit (for example 50 MB each).
 
 It uses a free helper program called FFMPEG to do the actual video work.

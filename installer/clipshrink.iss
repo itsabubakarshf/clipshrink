@@ -1,17 +1,17 @@
-; Inno Setup script - built by CI:  ISCC.exe /DMyAppVersion=0.2.0 installer\compressor.iss
+; Inno Setup script - built by CI:  ISCC.exe /DMyAppVersion=0.2.0 installer\clipshrink.iss
 #ifndef MyAppVersion
   #define MyAppVersion "0.2.0"
 #endif
-#define MyAppName "Video Compressor"
-#define MyAppExe "compressor.exe"
+#define MyAppName "ClipShrink"
+#define MyAppExe "clipshrink.exe"
 
 [Setup]
 AppId={{8F3C2B6E-5A1D-4C7B-9E42-1D6A7B0C9F31}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppPublisher=itsabubakarshf
-AppPublisherURL=https://github.com/itsabubakarshf/compressor
-AppSupportURL=https://github.com/itsabubakarshf/compressor
+AppPublisherURL=https://github.com/itsabubakarshf/clipshrink
+AppSupportURL=https://github.com/itsabubakarshf/clipshrink
 DefaultDirName={autopf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
@@ -21,7 +21,7 @@ PrivilegesRequiredOverridesAllowed=dialog
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 OutputDir=..\dist
-OutputBaseFilename=VideoCompressor-Setup-windows
+OutputBaseFilename=ClipShrink-Setup-windows
 SetupIconFile=..\assets\icon.ico
 UninstallDisplayIcon={app}\{#MyAppExe}
 InfoBeforeFile=before-install.txt
@@ -37,7 +37,7 @@ Name: "getffmpeg"; Description: "Download ffmpeg now (needed to process videos; 
 Name: "desktopicon"; Description: "Create a &desktop shortcut"; GroupDescription: "Shortcuts:"; Flags: unchecked
 
 [Files]
-Source: "..\dist\VideoCompressor-portable-windows.exe"; DestDir: "{app}"; DestName: "{#MyAppExe}"; Flags: ignoreversion
+Source: "..\dist\ClipShrink-portable-windows.exe"; DestDir: "{app}"; DestName: "{#MyAppExe}"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExe}"
@@ -51,11 +51,11 @@ Filename: "{app}\{#MyAppExe}"; Description: "Launch {#MyAppName}"; Flags: nowait
 
 [UninstallDelete]
 ; ffmpeg downloaded by the app lives here
-Type: filesandordirs; Name: "{localappdata}\compressor"
+Type: filesandordirs; Name: "{localappdata}\clipshrink"
 
 [Code]
 function NeedFfmpeg(): Boolean;
 begin
-  Result := not (FileExists(ExpandConstant('{localappdata}\compressor\ffmpeg\ffmpeg.exe'))
+  Result := not (FileExists(ExpandConstant('{localappdata}\clipshrink\ffmpeg\ffmpeg.exe'))
               or (FileSearch('ffmpeg.exe', GetEnv('PATH')) <> ''));
 end;

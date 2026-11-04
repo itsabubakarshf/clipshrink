@@ -55,7 +55,7 @@ pub struct Cli {
     #[arg(short = 's', long, default_value = "50MB", value_parser = parse_size)]
     pub max_size: u64,
 
-    /// Output folder (default: "compressor_out" next to the input)
+    /// Output folder (default: "clipshrink_out" next to the input)
     #[arg(short, long)]
     pub output: Option<PathBuf>,
 

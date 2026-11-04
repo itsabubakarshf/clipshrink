@@ -1,6 +1,6 @@
-<p align="center"><img src="assets/icon.png" width="110" alt="Video Compressor icon"></p>
+<p align="center"><img src="assets/icon.png" width="110" alt="ClipShrink icon"></p>
 
-<h1 align="center">Video Compressor</h1>
+<h1 align="center">ClipShrink</h1>
 
 <p align="center">
   <b>Shrink a video by a percentage, or cut it into upload-sized parts (like 50&nbsp;MB each) — in a few clicks.</b><br>
@@ -8,12 +8,12 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/itsabubakarshf/compressor/releases/tag/latest"><b>Download</b></a> ·
+  <a href="https://github.com/itsabubakarshf/clipshrink/releases/tag/latest"><b>Download</b></a> ·
   <a href="SETUP.md">Step-by-step setup guide</a> ·
   <a href="#command-line">Command line</a>
 </p>
 
-<p align="center"><img src="docs/screenshot.png" width="420" alt="Screenshot of the Video Compressor window"></p>
+<p align="center"><img src="docs/screenshot.png" width="420" alt="Screenshot of the ClipShrink window"></p>
 
 ## What it does
 
@@ -26,14 +26,14 @@
 
 ## Download
 
-Get it from the **[Releases page](https://github.com/itsabubakarshf/compressor/releases/tag/latest)**:
+Get it from the **[Releases page](https://github.com/itsabubakarshf/clipshrink/releases/tag/latest)**:
 
 | System | File | |
 |---|---|---|
-| Windows (recommended) | `VideoCompressor-Setup-windows.exe` | **Installer** — Start-menu shortcut, uninstaller, and it helps you set up ffmpeg |
-| Windows | `VideoCompressor-portable-windows.exe` | **Portable** — just run it, nothing to install |
-| Ubuntu / Linux | `compressor-linux` | |
-| macOS (Apple Silicon) | `compressor-macos` | |
+| Windows (recommended) | `ClipShrink-Setup-windows.exe` | **Installer** — Start-menu shortcut, uninstaller, and it helps you set up ffmpeg |
+| Windows | `ClipShrink-portable-windows.exe` | **Portable** — just run it, nothing to install |
+| Ubuntu / Linux | `clipshrink-linux` | |
+| macOS (Apple Silicon) | `clipshrink-macos` | |
 
 The app needs **ffmpeg** (the free video engine). On Windows it finds it for you or downloads it with one click —
 details in **[SETUP.md](SETUP.md)**, which walks through Windows, Ubuntu and macOS step by step.
@@ -44,22 +44,22 @@ Run with no arguments to open the window; give it a path to use the command line
 
 ```powershell
 # cut into parts of at most 50 MB (no quality loss, very fast)
-compressor.exe "C:\Videos\holiday.mp4" --mode split
+clipshrink.exe "C:\Videos\holiday.mp4" --mode split
 
 # make it about 40% smaller (a range like 30-50 aims for the middle)
-compressor.exe "C:\Videos\holiday.mp4" --mode compress --reduce 40%
+clipshrink.exe "C:\Videos\holiday.mp4" --mode compress --reduce 40%
 
 # 50% smaller, then cut into 25 MB parts if still too big
-compressor.exe "C:\Videos\holiday.mp4" --reduce 50 --max-size 25MB
+clipshrink.exe "C:\Videos\holiday.mp4" --reduce 50 --max-size 25MB
 
 # a whole folder, including sub-folders
-compressor.exe "C:\Videos" --recursive --reduce 40
+clipshrink.exe "C:\Videos" --recursive --reduce 40
 
 # smaller + faster: 720p, H.265, GPU if available
-compressor.exe "C:\Videos\holiday.mp4" --mode compress --height 720 --codec h265 --encoder auto
+clipshrink.exe "C:\Videos\holiday.mp4" --mode compress --height 720 --codec h265 --encoder auto
 ```
 
-Results go to `compressor_out\` next to the input (change with `--output`). Parts are named
+Results go to `clipshrink_out\` next to the input (change with `--output`). Parts are named
 `name_part001.mp4`, `name_part002.mp4`, … Existing outputs are skipped unless you pass `--overwrite`.
 
 | Option | Meaning |

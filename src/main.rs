@@ -119,7 +119,7 @@ fn main() {
     exit(code);
 }
 
-/// `compressor --setup-ffmpeg`: used by the installer (and handy by hand) to get ffmpeg ready.
+/// `clipshrink --setup-ffmpeg`: used by the installer (and handy by hand) to get ffmpeg ready.
 fn setup_ffmpeg() -> i32 {
     let ui = CliUi::new(true);
     let result = match ffmpeg::Tools::locate(None) {

@@ -124,7 +124,7 @@ mod tests {
     #[test]
     #[ignore]
     fn download_and_extract() {
-        let d = std::env::temp_dir().join(format!("compressor-dl-{}", std::process::id()));
+        let d = std::env::temp_dir().join(format!("clipshrink-dl-{}", std::process::id()));
         std::env::set_var("COMPRESSOR_HOME", &d);
         let dir = download_ffmpeg(&Quiet).unwrap();
         for exe in ["ffmpeg.exe", "ffprobe.exe"] {

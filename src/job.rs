@@ -79,7 +79,7 @@ pub fn run(job: &Job, ui: &dyn Ui) -> Result<Summary> {
     };
 
     let base = if job.input.is_dir() { job.input.clone() } else { job.input.parent().map(Path::to_path_buf).unwrap_or_default() };
-    let out_root = job.output.clone().unwrap_or_else(|| base.join("compressor_out"));
+    let out_root = job.output.clone().unwrap_or_else(|| base.join("clipshrink_out"));
     let files = collect_videos(&job.input, job.recursive, &out_root);
     if files.is_empty() {
         bail!(

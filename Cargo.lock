@@ -363,6 +363,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "clipshrink"
+version = "0.2.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "eframe",
+ "indicatif",
+ "rfd",
+ "serde_json",
+ "ureq",
+ "walkdir",
+ "winresource",
+ "zip",
+]
+
+[[package]]
 name = "codespan-reporting"
 version = "0.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -394,22 +410,6 @@ checksum = "4356eba6976435498d05a311ee9fc486da3bc81c200d3f0d7dd9703b41913f92"
 dependencies = [
  "bytes",
  "memchr",
-]
-
-[[package]]
-name = "compressor"
-version = "0.2.0"
-dependencies = [
- "anyhow",
- "clap",
- "eframe",
- "indicatif",
- "rfd",
- "serde_json",
- "ureq",
- "walkdir",
- "winresource",
- "zip",
 ]
 
 [[package]]
