@@ -11,7 +11,9 @@ clap = { version = "4", features = ["derive"] }
 eframe = { version = "0.37.0", default-features = false, features = ["glow", "default_fonts", "x11", "wayland"] }
 indicatif = "0.17"
 serde_json = "1"
+ureq = { version = "2", features = ["native-certs"] }
 walkdir = "2"
+zip = { version = "2", default-features = false, features = ["deflate"] }
 
 [profile.release]
 opt-level = 3

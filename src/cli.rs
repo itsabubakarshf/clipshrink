@@ -96,6 +96,10 @@ pub struct Cli {
     #[arg(long)]
     pub overwrite: bool,
 
+    /// Don't ask before downloading ffmpeg automatically when it is missing (Windows)
+    #[arg(short = 'y', long)]
+    pub yes: bool,
+
     /// Path to ffmpeg (file or folder). Default: next to this exe, then PATH
     #[arg(long)]
     pub ffmpeg: Option<PathBuf>,

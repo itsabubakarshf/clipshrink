@@ -107,9 +107,22 @@ To update later: `git pull` and `cargo build --release` again.)
 
 ---
 
-## Part 2 — Install ffmpeg
+## Part 2 — ffmpeg (the video engine)
 
-The compressor needs ffmpeg installed. Do this once.
+The compressor needs ffmpeg. **On Windows you usually don't have to do anything:**
+
+1. The program looks for ffmpeg by itself — next to the program, on your PATH, and in the usual places
+   (including an unzipped `ffmpeg…` folder in Downloads / Desktop / Documents, winget, Chocolatey, Scoop).
+2. If it still can't find it, the window shows two buttons the first time you press **Start**:
+   - **Download ffmpeg automatically** — one click, about 100–200 MB, saved once in your user folder
+     (`%LOCALAPPDATA%\compressor\ffmpeg`), no admin rights needed. You are never asked again.
+   - **I already have ffmpeg — locate its folder…** — pick the folder that contains `ffmpeg.exe` and `ffprobe.exe`
+     (it's usually called `bin`). The choice is remembered.
+   
+   On the command line it asks once: press **Enter** to download (or run with `--yes` to skip the question, or
+   `--ffmpeg "C:\path\to\ffmpeg\bin"` to use your own copy).
+
+Prefer to install it yourself? Do this once:
 
 **Windows** — open **PowerShell** (Start → type `PowerShell`):
 ```powershell
@@ -217,7 +230,7 @@ There is no config file. Everything is chosen in the window, or with options on 
 
 | Problem | Fix |
 |---|---|
-| `ffmpeg/ffprobe not found` | ffmpeg isn't installed, or the terminal was opened before installing it. Close and reopen the terminal and check `ffmpeg -version`. Or put `ffmpeg`/`ffprobe` next to the program, or use `--ffmpeg <path>`. |
+| `ffmpeg/ffprobe not found` | On Windows use the **Download** / **locate** buttons (Part 2). Otherwise ffmpeg isn't installed, or the terminal was opened before installing it. Close and reopen the terminal and check `ffmpeg -version`. Or put `ffmpeg`/`ffprobe` next to the program, or use `--ffmpeg <path>`. |
 | Windows: "Windows protected your PC" | **More info → Run anyway** (the program isn't code-signed). |
 | Mac: "cannot be opened because the developer cannot be verified" | `xattr -d com.apple.quarantine compressor-macos`, or **System Settings → Privacy & Security → Open Anyway**. |
 | Linux/Mac: "Permission denied" | `chmod +x <file>`. |
@@ -225,6 +238,7 @@ There is no config file. Everything is chosen in the window, or with options on 
 | Releases page has nothing to download | Wait for the build to finish (Actions tab), or use the Actions artifacts / build it yourself (Option B above). |
 | Parts are smaller than the limit | Normal: videos are cut on keyframes, so a part can't be exactly 50 MB. They are never larger than the limit. |
 | `skipped: … already exists` | Results from an earlier run are in `compressor_out`. Tick *Replace existing results* / use `--overwrite`. |
+| Lots of black command windows flash up | Fixed in the current build (they're hidden). Download the newest `compressor-windows.exe` from Releases. |
 | Compression is slow | See "It's slow" above. Hitting an exact size on the CPU encodes the video twice, so it takes about twice as long. |
 
 ---

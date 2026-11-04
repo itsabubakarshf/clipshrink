@@ -124,26 +124,34 @@ fn compress(
         remove_pass_logs(&log_prefix);
     };
 
-    let result = (|| -> Result<()> {
+    let attempt = |two_pass: bool| -> Result<()> {
         if two_pass {
             let pass1 = Args::new()
                 .a("-i").a(input)
                 .many(["-map", "0:v:0", "-an"])
                 .many(enc.args().0)
-                .many(["-pass", "1", "-passlogfile"]).a(&log_prefix)
+                .many(["-pass:v", "1", "-passlogfile"]).a(&log_prefix)
                 .many(["-f", "null", "-"]);
             ui.status("analysing (pass 1/2)");
             tools.run(&pass1, info.duration, &Slice { ui, lo: 0.0, hi: 0.4 })?;
         }
         let mut args = Args::new().a("-i").a(input).many(["-map", "0:v:0", "-map", "0:a?"]).many(enc.args().0);
         if two_pass {
-            args = args.many(["-pass", "2", "-passlogfile"]).a(&log_prefix);
+            args = args.many(["-pass:v", "2", "-passlogfile"]).a(&log_prefix);
             ui.status("encoding (pass 2/2)");
         }
         args = args.many(["-movflags", "+faststart"]).a(&tmp);
         let (lo, hi) = if two_pass { (0.4, 1.0) } else { (0.0, 1.0) };
         tools.run(&args, info.duration, &Slice { ui, lo, hi })
-    })();
+    };
+    let mut result = attempt(two_pass);
+    if result.is_err() && two_pass && !ui.cancelled() {
+        // Two-pass is only for accuracy; if this ffmpeg build can't do it, fall back to one pass.
+        ui.log("  note: two-pass encoding failed on this system, using single pass (size will be less exact)");
+        remove_pass_logs(&log_prefix);
+        let _ = fs::remove_file(&tmp);
+        result = attempt(false);
+    }
     remove_pass_logs(&log_prefix);
     if let Err(e) = result {
         cleanup();

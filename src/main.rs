@@ -1,6 +1,7 @@
 // Release builds on Windows are console apps (so the CLI prints output); the GUI hides the console itself.
 mod cli;
 mod encode;
+mod fetch;
 mod ffmpeg;
 mod gui;
 mod job;
@@ -14,16 +15,17 @@ use clap::Parser;
 use indicatif::{ProgressBar, ProgressStyle};
 
 use cli::Cli;
-use ffmpeg::Ui;
+use ffmpeg::{MissingChoice, Ui};
 use job::Job;
 use util::fmt_size;
 
 struct CliUi {
     pb: ProgressBar,
+    yes: bool,
 }
 
 impl CliUi {
-    fn new() -> Self {
+    fn new(yes: bool) -> Self {
         let pb = ProgressBar::new(1000);
         pb.set_style(
             ProgressStyle::with_template("  {msg:<26} [{bar:30.cyan/blue}] {percent:>3}%  {elapsed_precise}")
@@ -31,7 +33,7 @@ impl CliUi {
                 .progress_chars("=> "),
         );
         pb.enable_steady_tick(Duration::from_millis(200));
-        CliUi { pb }
+        CliUi { pb, yes }
     }
 }
 
@@ -41,6 +43,24 @@ impl Ui for CliUi {
     }
     fn status(&self, m: &str) {
         self.pb.set_message(m.to_string());
+    }
+    fn ffmpeg_missing(&self) -> MissingChoice {
+        if !cfg!(windows) {
+            return MissingChoice::Cancel;
+        }
+        if self.yes {
+            return MissingChoice::Download;
+        }
+        if !std::io::IsTerminal::is_terminal(&std::io::stdin()) {
+            return MissingChoice::Cancel;
+        }
+        println!("ffmpeg (the video engine this tool needs) was not found on this computer.");
+        println!("It can be downloaded automatically (about 100-200 MB, one time only, no admin needed).");
+        println!("(If you already have it somewhere, cancel and run again with --ffmpeg \"C:\\path\\to\\ffmpeg\\bin\".)");
+        print!("Press Enter to download it, or Ctrl+C to cancel: ");
+        let _ = std::io::Write::flush(&mut std::io::stdout());
+        let _ = std::io::stdin().read_line(&mut String::new());
+        MissingChoice::Download
     }
     fn log(&self, m: &str) {
         if self.pb.is_hidden() {
@@ -72,11 +92,12 @@ fn main() {
         audio_bitrate: cli.audio_bitrate,
         ffmpeg: cli.ffmpeg,
     };
+    let yes = cli.yes;
     if cli.input.is_none() {
         eprintln!("error: give a video file or folder (or run with no arguments to open the window)");
         exit(2);
     }
-    let ui = CliUi::new();
+    let ui = CliUi::new(yes);
     let code = match job::run(&job, &ui) {
         Ok(s) => {
             ui.pb.finish_and_clear();

@@ -7,7 +7,7 @@ use walkdir::WalkDir;
 
 use crate::cli::{Codec, EncoderKind, Mode};
 use crate::encode::EncodeSettings;
-use crate::ffmpeg::{Tools, Ui};
+use crate::ffmpeg::{FfmpegMissing, MissingChoice, Tools, Ui};
 use crate::process::{process_file, Options, Outcome};
 use crate::util::fmt_size;
 
@@ -47,7 +47,18 @@ pub fn run(job: &Job, ui: &dyn Ui) -> Result<Summary> {
     if job.reduce.is_some() && job.mode == Mode::Split {
         bail!("a size reduction only applies when compressing; pick 'compress' or 'both'");
     }
-    let tools = Tools::locate(job.ffmpeg.as_deref())?;
+    let tools = match Tools::locate(job.ffmpeg.as_deref()) {
+        Ok(t) => t,
+        Err(e) if e.is::<FfmpegMissing>() && job.ffmpeg.is_none() => match ui.ffmpeg_missing() {
+            MissingChoice::Download if cfg!(windows) => {
+                crate::fetch::download_ffmpeg(ui)?;
+                Tools::locate(None)?
+            }
+            MissingChoice::Retry => Tools::locate(None)?,
+            _ => return Err(e),
+        },
+        Err(e) => return Err(e),
+    };
 
     let needs_encode = job.mode != Mode::Split;
     let encoder = if needs_encode { tools.resolve_encoder(job.encoder, job.codec)? } else { EncoderKind::Cpu };

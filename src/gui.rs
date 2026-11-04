@@ -7,7 +7,9 @@ use std::sync::{Arc, Mutex};
 use eframe::egui;
 
 use crate::cli::{Codec, EncoderKind, Mode};
-use crate::ffmpeg::Ui;
+#[cfg(windows)]
+use crate::ffmpeg::{remember_ffmpeg, Tools};
+use crate::ffmpeg::{MissingChoice, Ui};
 use crate::job::{self, Job};
 use crate::util::{fmt_size, parse_size};
 
@@ -20,6 +22,9 @@ struct RunState {
     log: Vec<String>,
     finished: Option<String>,
     out_dir: Option<PathBuf>,
+    ask_ffmpeg: bool,
+    ffmpeg_answer: Option<MissingChoice>,
+    ffmpeg_msg: String,
 }
 
 struct Shared {
@@ -52,6 +57,24 @@ impl Ui for GuiUi {
     }
     fn cancelled(&self) -> bool {
         self.0.cancel.load(Ordering::Relaxed)
+    }
+    fn ffmpeg_missing(&self) -> MissingChoice {
+        self.with(|s| {
+            s.ask_ffmpeg = true;
+            s.ffmpeg_answer = None;
+        });
+        loop {
+            std::thread::sleep(std::time::Duration::from_millis(100));
+            let mut st = self.0.state.lock().unwrap();
+            if let Some(a) = st.ffmpeg_answer.take() {
+                st.ask_ffmpeg = false;
+                return a;
+            }
+            if self.0.cancel.load(Ordering::Relaxed) {
+                st.ask_ffmpeg = false;
+                return MissingChoice::Cancel;
+            }
+        }
     }
 }
 
@@ -157,7 +180,7 @@ impl App {
                         } else if sum.failed > 0 {
                             format!("Finished with {} error(s) — see the log.", sum.failed)
                         } else {
-                            format!("Done. {} → {}", fmt_size(sum.total_in), fmt_size(sum.total_out))
+                            format!("Done. {} to {}", fmt_size(sum.total_in), fmt_size(sum.total_out))
                         });
                     }
                     Err(e) => s.finished = Some(format!("Problem: {e:#}")),
@@ -241,7 +264,7 @@ impl eframe::App for App {
                         });
                         if let Some(sz) = self.input_size {
                             let after = sz as f64 * (1.0 - self.reduce_pct as f64 / 100.0);
-                            ui.label(format!("About {} → about {}", fmt_size(sz), fmt_size(after as u64)));
+                            ui.label(format!("About {} to about {}", fmt_size(sz), fmt_size(after as u64)));
                         }
                     }
                 }
@@ -290,7 +313,36 @@ impl eframe::App for App {
                     }
                 });
 
-                let st = self.shared.state.lock().unwrap();
+                let mut st = self.shared.state.lock().unwrap();
+                if st.ask_ffmpeg {
+                    ui.separator();
+                    ui.strong("ffmpeg (the video engine) wasn't found on this computer.");
+                    ui.label("You only need to do this once:");
+                    if cfg!(windows) && ui.button("Download ffmpeg automatically (about 100-200 MB)").clicked() {
+                        st.ffmpeg_answer = Some(MissingChoice::Download);
+                    }
+                    #[cfg(windows)]
+                    if ui.button("I already have ffmpeg — locate its folder…").clicked() {
+                        if let Some(p) = rfd::FileDialog::new().set_title("Select the folder containing ffmpeg.exe (usually …\\bin)").pick_folder() {
+                            if Tools::locate(Some(&p)).is_ok() && remember_ffmpeg(&p).is_ok() {
+                                st.ffmpeg_msg.clear();
+                                st.ffmpeg_answer = Some(MissingChoice::Retry);
+                            } else {
+                                st.ffmpeg_msg = format!("No ffmpeg.exe + ffprobe.exe found in {}. Pick the folder that contains both (often called \"bin\").", p.display());
+                            }
+                        }
+                    }
+                    if !cfg!(windows) {
+                        ui.label("Install it with:  sudo apt install ffmpeg   (Ubuntu)   or   brew install ffmpeg   (Mac), then press Start again.");
+                    }
+                    if !st.ffmpeg_msg.is_empty() {
+                        ui.colored_label(egui::Color32::from_rgb(230, 170, 60), st.ffmpeg_msg.clone());
+                    }
+                    if ui.button("Cancel").clicked() {
+                        self.shared.cancel.store(true, Ordering::Relaxed);
+                    }
+                    ui.separator();
+                }
                 if running {
                     ui.label(format!("{}  {}", st.file, st.status));
                     ui.add(egui::ProgressBar::new(st.frac as f32).show_percentage().animate(true));
