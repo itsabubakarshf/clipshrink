@@ -16,17 +16,39 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - run: cargo test --release
 
-  windows:
-    runs-on: windows-latest
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            artifact: compressor-windows
+            bin: compressor.exe
+          - os: ubuntu-latest
+            artifact: compressor-linux
+            bin: compressor
+          - os: macos-latest
+            artifact: compressor-macos
+            bin: compressor
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - run: cargo build --release
+      - name: Name the file for this platform
+        shell: bash
+        run: |
+          mkdir dist
+          case "${{ matrix.artifact }}" in
+            compressor-windows) cp target/release/compressor.exe dist/compressor-windows.exe ;;
+            compressor-linux)   cp target/release/compressor dist/compressor-linux && chmod +x dist/compressor-linux ;;
+            compressor-macos)   cp target/release/compressor dist/compressor-macos && chmod +x dist/compressor-macos ;;
+          esac
       - uses: actions/upload-artifact@v4
         with:
-          name: compressor-windows
-          path: target/release/compressor.exe
+          name: ${{ matrix.artifact }}
+          path: dist/*
       - name: Attach to release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: target/release/compressor.exe
+          files: dist/*

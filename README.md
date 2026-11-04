@@ -8,12 +8,13 @@ Fast Rust command-line tool (wrapping **ffmpeg**) that can
 
 Works on a single file or a whole folder.
 
-## Setup (Windows)
+## Install
 
-1. Install ffmpeg: `winget install Gyan.FFmpeg` (or download from <https://www.gyan.dev/ffmpeg/builds/>
-   and put `ffmpeg.exe` + `ffprobe.exe` next to `compressor.exe`).
-2. Get `compressor.exe` from the **Actions** tab (artifact `compressor-windows`) or the **Releases** page,
-   or build it yourself: `cargo build --release` → `target\release\compressor.exe`.
+**Step-by-step guide for Windows, Ubuntu and macOS: [SETUP.md](SETUP.md).**
+
+In short: install ffmpeg (`winget install Gyan.FFmpeg` / `sudo apt install ffmpeg` / `brew install ffmpeg`), download
+`compressor` for your system from the Releases page (or the Actions artifacts), and run it — with no arguments it
+opens a window.
 
 ## Usage
 
