@@ -1,7 +1,7 @@
 # Setup guide
 
 **What is this?** `compressor` is a small program that makes videos smaller and/or cuts them into parts
-(for example 50 MB each). It is one single file — `compressor-windows.exe` on Windows,
+(for example 50 MB each). It is one single file — `VideoCompressor-portable-windows.exe` on Windows,
 `compressor-linux` on Ubuntu, `compressor-macos` on Mac — and it uses **ffmpeg** (a free video tool) to do the work.
 
 You need two things on your computer:
@@ -33,13 +33,19 @@ files on the repository's **Releases** page.
 
    | Your computer | Download this file |
    |---|---|
-   | **Windows** | `compressor-windows.exe` |
+   | **Windows — installer (recommended)** | `VideoCompressor-Setup-windows.exe` |
+   | **Windows — portable (no install)** | `VideoCompressor-portable-windows.exe` |
    | **Ubuntu / Linux** | `compressor-linux` |
    | **Mac** (M1/M2/M3/M4) | `compressor-macos` |
 
    (Ignore "Source code (zip)" / "Source code (tar.gz)" — that is the program's code, not the program.)
-5. Save it somewhere you will remember. On Windows, create a folder such as `C:\Tools` and put it there.
-   You can rename `compressor-windows.exe` to `compressor.exe`.
+
+   **Installer or portable?** The installer adds a Start-menu entry (and optional desktop shortcut), can be uninstalled
+   from Windows Settings, and walks you through getting ffmpeg. The portable file is the same program: put it anywhere
+   and double-click it — nothing is installed.
+5. **Installer:** double-click `VideoCompressor-Setup-windows.exe` and follow the wizard (see
+   [Using the Windows installer](#using-the-windows-installer) below). **Portable:** save the file somewhere you will
+   remember, e.g. `C:\Tools`, and double-click it.
 
 > **The Releases page is empty / has no "Latest build"?** The build runs automatically after the code is pushed
 > and takes about 5–10 minutes. Meanwhile (or if a build failed) you can grab the files from the **Actions** tab:
@@ -50,6 +56,20 @@ files on the repository's **Releases** page.
 > **Where does the code live?** Currently on the branch `claude/video-compression-splitting-ii43jb`. To make the
 > repo page show it by default, merge that branch into `main` (on GitHub: **Pull requests → New pull request**,
 > base `main`, compare `claude/video-compression-splitting-ii43jb`, then **Merge**). The downloads work either way.
+
+#### Using the Windows installer
+1. Double-click `VideoCompressor-Setup-windows.exe`. It installs just for you — no administrator rights needed.
+2. The first page, **"Before you install"**, explains that the program needs **ffmpeg** and your three options.
+3. Choose the folder (the default is fine) and click **Next**.
+4. On **Select Additional Tasks**, leave **"Download ffmpeg now"** ticked (recommended; needs an internet connection).
+   Optionally tick the desktop shortcut.
+5. Click **Install**. When the files are copied, a small window downloads ffmpeg (about 100–200 MB, a few minutes, one time)
+   and closes by itself when it's done.
+6. Click **Finish** — the app opens. Start-menu entries: *Video Compressor*, *Set up ffmpeg (download)* (re-run
+   the download any time) and *Uninstall*.
+   Uninstalling also removes the ffmpeg it downloaded.
+
+If you un-tick the ffmpeg download, nothing is lost: the app offers a one-click download the first time you press **Start**.
 
 #### Windows: the first time you open it
 Chrome/Edge may say the file *"isn't commonly downloaded"* → click **Keep**. When you double-click it, Windows may show
@@ -156,7 +176,7 @@ ffmpeg -version
 
 ### The window (easiest)
 
-- **Windows:** double-click `compressor.exe`.
+- **Windows:** double-click the Start-menu entry *Video Compressor* (installer) or the portable `.exe`.
 - **Ubuntu / Mac:** open a terminal in the folder and run `./compressor-linux` (or `./compressor-macos`) with nothing after it.
 
 Then:
@@ -169,6 +189,8 @@ Then:
    video. Your original is never changed.
 
 ### The command line
+
+(The examples say `compressor.exe`. If you used the portable download, that is `VideoCompressor-portable-windows.exe` — rename it or use its name. With the installer the program is in `%LOCALAPPDATA%\Programs\Video Compressor\compressor.exe`.)
 
 Open **PowerShell** (Windows) or a terminal (Ubuntu/Mac), go to the folder containing the program
 (`cd C:\Tools`), and run it with the path to your video or folder. Windows examples (on Ubuntu/Mac use `./compressor-linux`
@@ -238,7 +260,7 @@ There is no config file. Everything is chosen in the window, or with options on 
 | Releases page has nothing to download | Wait for the build to finish (Actions tab), or use the Actions artifacts / build it yourself (Option B above). |
 | Parts are smaller than the limit | Normal: videos are cut on keyframes, so a part can't be exactly 50 MB. They are never larger than the limit. |
 | `skipped: … already exists` | Results from an earlier run are in `compressor_out`. Tick *Replace existing results* / use `--overwrite`. |
-| Lots of black command windows flash up | Fixed in the current build (they're hidden). Download the newest `compressor-windows.exe` from Releases. |
+| Lots of black command windows flash up | Fixed in the current build (they're hidden). Download the newest `VideoCompressor-portable-windows.exe` from Releases. |
 | Compression is slow | See "It's slow" above. Hitting an exact size on the CPU encodes the video twice, so it takes about twice as long. |
 
 ---

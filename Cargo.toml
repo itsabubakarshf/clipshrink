@@ -2,7 +2,8 @@
 name = "compressor"
 version = "0.2.0"
 edition = "2021"
-description = "Split videos into size-limited parts and/or compress them, powered by ffmpeg"
+description = "Shrink videos by a percentage or split them into upload-size parts - desktop app and CLI built on ffmpeg"
+repository = "https://github.com/itsabubakarshf/compressor"
 license = "MIT"
 
 [dependencies]

@@ -1,51 +1,59 @@
-# compressor
+<p align="center"><img src="assets/icon.png" width="110" alt="Video Compressor icon"></p>
 
-Fast Rust command-line tool (wrapping **ffmpeg**) that can
+<h1 align="center">Video Compressor</h1>
 
-- **split** a video into parts of at most N MB (default **50 MB**) — lossless, no re-encoding,
-- **compress** a video to a smaller file (H.264 or H.265, optional downscale, optional GPU),
-- or **both**: compress first, then split only if the result is still too big.
+<p align="center">
+  <b>Shrink a video by a percentage, or cut it into upload-sized parts (like 50&nbsp;MB each) — in a few clicks.</b><br>
+  A fast, friendly desktop app and command-line tool for Windows, Ubuntu/Linux and macOS. Built in Rust on top of ffmpeg.
+</p>
 
-Works on a single file or a whole folder.
+<p align="center">
+  <a href="https://github.com/itsabubakarshf/compressor/releases/tag/latest"><b>Download</b></a> ·
+  <a href="SETUP.md">Step-by-step setup guide</a> ·
+  <a href="#command-line">Command line</a>
+</p>
 
-## Install
+<p align="center"><img src="docs/screenshot.png" width="420" alt="Screenshot of the Video Compressor window"></p>
 
-**Full step-by-step guide (how to download the exe, install ffmpeg, use it, and all settings) for Windows,
-Ubuntu and macOS: [SETUP.md](SETUP.md).**
+## What it does
 
-In short: download the program for your system from the
-[Releases page](https://github.com/itsabubakarshf/compressor/releases) (`compressor-windows.exe`,
-`compressor-linux`, `compressor-macos`), install ffmpeg (`winget install Gyan.FFmpeg` /
-`sudo apt install ffmpeg` / `brew install ffmpeg`), and run it — with no arguments it opens a window.
+- **Make it smaller** — say "40% smaller" and it works out the right settings to land close to that size.
+- **Cut it into parts** — split a long video into pieces that each stay under a size limit (default 50 MB), with no quality loss.
+- **Or both** — compress first, then split only if it's still too big.
+- **One file or a whole folder** (with sub-folders if you want). Your originals are never touched.
+- **Easy** — drop a file on the window, pick what you want, press Start. Live progress and a Cancel button.
+- **Fast** — H.264 or H.265, optional graphics-card encoding (NVIDIA / Intel / AMD), optional downscaling to 720p etc.
 
-## Usage
+## Download
 
-### Window (easiest)
+Get it from the **[Releases page](https://github.com/itsabubakarshf/compressor/releases/tag/latest)**:
 
-Double-click `compressor.exe`. Pick a video or folder (or drag it onto the window), choose **Compress**,
-**Split into parts** or **Compress, then split**, drag the **"x% smaller"** slider (or click 30 / 40 / 50 / 60 / 70 %),
-set the max part size, and press **Start**. Progress is shown live and there is a Cancel button.
+| System | File | |
+|---|---|---|
+| Windows (recommended) | `VideoCompressor-Setup-windows.exe` | **Installer** — Start-menu shortcut, uninstaller, and it helps you set up ffmpeg |
+| Windows | `VideoCompressor-portable-windows.exe` | **Portable** — just run it, nothing to install |
+| Ubuntu / Linux | `compressor-linux` | |
+| macOS (Apple Silicon) | `compressor-macos` | |
 
-### Command line
+The app needs **ffmpeg** (the free video engine). On Windows it finds it for you or downloads it with one click —
+details in **[SETUP.md](SETUP.md)**, which walks through Windows, Ubuntu and macOS step by step.
+
+## Command line
+
+Run with no arguments to open the window; give it a path to use the command line.
 
 ```powershell
-# split only → parts of ≤ 50 MB
+# cut into parts of at most 50 MB (no quality loss, very fast)
 compressor.exe "C:\Videos\holiday.mp4" --mode split
-
-# compress only, no splitting
-compressor.exe "C:\Videos\holiday.mp4" --mode compress
-
-# compress, then split if still over 50 MB (default mode)
-compressor.exe "C:\Videos\holiday.mp4"
 
 # make it about 40% smaller (a range like 30-50 aims for the middle)
 compressor.exe "C:\Videos\holiday.mp4" --mode compress --reduce 40%
 
-# 50% smaller, then cut into 25 MB parts
+# 50% smaller, then cut into 25 MB parts if still too big
 compressor.exe "C:\Videos\holiday.mp4" --reduce 50 --max-size 25MB
 
-# a whole folder, including sub-folders, 25 MB parts
-compressor.exe "C:\Videos" --recursive --max-size 25MB
+# a whole folder, including sub-folders
+compressor.exe "C:\Videos" --recursive --reduce 40
 
 # smaller + faster: 720p, H.265, GPU if available
 compressor.exe "C:\Videos\holiday.mp4" --mode compress --height 720 --codec h265 --encoder auto
@@ -58,16 +66,18 @@ Results go to `compressor_out\` next to the input (change with `--output`). Part
 |---|---|
 | `-m, --mode` | `compress`, `split`, or `both` (default) |
 | `-s, --max-size` | max part size, e.g. `50MB`, `1.5GB` (1 MB = 1,000,000 bytes, so parts are also under 50 MiB) |
+| `--reduce` | make the video this much smaller: `40`, `40%`, or `30-50` (aims for the middle). Replaces `--crf` |
+| `--crf` | quality, lower = better/bigger (default 26 for h264, 28 for h265) |
 | `-o, --output` | output folder |
 | `-r, --recursive` | include sub-folders |
 | `--codec` | `h264` (default) or `h265` |
-| `--reduce` | make the video this much smaller: `40`, `40%`, or `30-50` (aims for the middle). Replaces `--crf` |
-| `--crf` | quality, lower = better/bigger (default 26 for h264, 28 for h265) |
 | `--preset` | x264/x265 speed preset, default `medium` |
 | `--height` | downscale to at most this height (never upscales) |
 | `--audio-bitrate` | default `128k` |
 | `--encoder` | `cpu` (default, best quality per byte), `auto` (try GPU), `nvenc`, `qsv`, `amf` |
-| `--ffmpeg` | path to ffmpeg if it isn't on PATH |
+| `--ffmpeg` | path to ffmpeg if it isn't found automatically |
+| `--setup-ffmpeg` | download and set up ffmpeg now, then exit (Windows) |
+| `-y, --yes` | don't ask before downloading ffmpeg |
 
 ## How "make it X% smaller" works
 
@@ -88,5 +98,10 @@ Only the first video stream and all audio streams are kept (subtitles/data track
 ## Development
 
 ```bash
-cargo test   # unit tests + end-to-end tests (need ffmpeg on PATH)
+cargo run                # opens the window
+cargo test               # unit tests + end-to-end tests (need ffmpeg on PATH)
+python3 tools/make_icon.py   # regenerate the icon (needs Pillow)
 ```
+
+CI builds the Windows installer (Inno Setup), the portable exe, and the Linux/macOS binaries on every push and
+publishes them on the Releases page.
