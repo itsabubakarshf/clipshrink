@@ -39,10 +39,20 @@ jobs:
         run: |
           mkdir dist
           case "${{ matrix.artifact }}" in
-            compressor-windows) cp target/release/compressor.exe dist/compressor-windows.exe ;;
+            compressor-windows) cp target/release/compressor.exe dist/VideoCompressor-portable-windows.exe ;;
             compressor-linux)   cp target/release/compressor dist/compressor-linux && chmod +x dist/compressor-linux ;;
             compressor-macos)   cp target/release/compressor dist/compressor-macos && chmod +x dist/compressor-macos ;;
           esac
+      - name: Build the Windows installer
+        if: matrix.artifact == 'compressor-windows'
+        shell: pwsh
+        run: |
+          $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { choco install innosetup -y --no-progress }
+          $v = (Select-String -Path Cargo.toml -Pattern '^version = "(.*)"').Matches[0].Groups[1].Value
+          & $iscc "/DMyAppVersion=$v" installer\compressor.iss
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Get-ChildItem dist
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact }}
@@ -77,5 +87,5 @@ jobs:
           name: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || 'Latest build' }}
           prerelease: ${{ !startsWith(github.ref, 'refs/tags/v') }}
           target_commitish: ${{ github.sha }}
-          body: "Download the file for your system: compressor-windows.exe (Windows), compressor-linux (Ubuntu/Linux), compressor-macos (Mac, Apple Silicon). See SETUP.md for the step-by-step guide."
+          body: "Windows: VideoCompressor-Setup-windows.exe (installer) or VideoCompressor-portable-windows.exe (portable, no install). Ubuntu/Linux: compressor-linux. Mac (Apple Silicon): compressor-macos. See SETUP.md for the step-by-step guide."
           files: dist/*

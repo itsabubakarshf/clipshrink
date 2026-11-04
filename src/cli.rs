@@ -100,6 +100,10 @@ pub struct Cli {
     #[arg(short = 'y', long)]
     pub yes: bool,
 
+    /// Download and set up ffmpeg now (if it isn't already available), then exit
+    #[arg(long)]
+    pub setup_ffmpeg: bool,
+
     /// Path to ffmpeg (file or folder). Default: next to this exe, then PATH
     #[arg(long)]
     pub ffmpeg: Option<PathBuf>,

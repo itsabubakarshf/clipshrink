@@ -1,0 +1,30 @@
+Video Compressor - before you install
+=====================================
+
+Video Compressor makes videos smaller and/or cuts them into parts that fit an
+upload limit (for example 50 MB each).
+
+It uses a free helper program called FFMPEG to do the actual video work.
+FFMPEG is NOT part of this installer (it is large, about 100-200 MB), so it is
+set up separately. You have three easy options:
+
+  1. EASIEST - let this installer do it
+     On the "Select Additional Tasks" page, leave
+     "Download ffmpeg now" ticked. After the files are copied, a small window
+     downloads ffmpeg for you (a few minutes, one time only, no admin rights
+     needed). You need an internet connection for this step.
+
+  2. Skip it now - the app will offer it later
+     The first time you press Start and ffmpeg is missing, the app shows a
+     "Download ffmpeg automatically" button. One click, and it is remembered.
+
+  3. You already have ffmpeg (or prefer your own copy)
+     The app finds it automatically if it is on your PATH, installed with
+     winget / Chocolatey / Scoop, or in an unzipped "ffmpeg..." folder in
+     Downloads, Desktop or Documents. Otherwise use the
+     "I already have ffmpeg - locate its folder" button in the app, and pick
+     the folder that contains ffmpeg.exe and ffprobe.exe (usually "bin").
+
+     To install it yourself from a terminal:   winget install Gyan.FFmpeg
+
+You can run "Set up ffmpeg" any time from the Start menu to download it again.

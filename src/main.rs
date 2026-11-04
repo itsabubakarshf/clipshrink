@@ -76,6 +76,9 @@ fn main() {
         exit(gui::run());
     }
     let cli = Cli::parse();
+    if cli.setup_ffmpeg {
+        exit(setup_ffmpeg());
+    }
     let job = Job {
         input: cli.input.clone().unwrap_or_default(),
         mode: cli.mode,
@@ -114,4 +117,36 @@ fn main() {
         }
     };
     exit(code);
+}
+
+/// `compressor --setup-ffmpeg`: used by the installer (and handy by hand) to get ffmpeg ready.
+fn setup_ffmpeg() -> i32 {
+    let ui = CliUi::new(true);
+    let result = match ffmpeg::Tools::locate(None) {
+        Ok(t) => {
+            println!("ffmpeg is already available: {}", t.ffmpeg.display());
+            Ok(())
+        }
+        Err(_) if cfg!(windows) => fetch::download_ffmpeg(&ui).and_then(|_| ffmpeg::Tools::locate(None)).map(|t| {
+            ui.pb.finish_and_clear();
+            println!("\nffmpeg is ready: {}", t.ffmpeg.display());
+        }),
+        Err(e) => Err(e),
+    };
+    ui.pb.finish_and_clear();
+    match result {
+        Ok(()) => {
+            println!("All set. This window closes in a few seconds...");
+            std::thread::sleep(Duration::from_secs(4));
+            0
+        }
+        Err(e) => {
+            eprintln!("\nCould not set up ffmpeg: {e:#}");
+            eprintln!("You can also install it yourself: winget install Gyan.FFmpeg  (see SETUP.md)");
+            print!("Press Enter to close...");
+            let _ = std::io::Write::flush(&mut std::io::stdout());
+            let _ = std::io::stdin().read_line(&mut String::new());
+            1
+        }
+    }
 }

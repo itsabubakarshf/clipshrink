@@ -381,7 +381,13 @@ pub fn run() -> i32 {
         }
     }
     let options = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default().with_inner_size([560.0, 640.0]).with_min_inner_size([460.0, 480.0]),
+        viewport: {
+            let mut vp = egui::ViewportBuilder::default().with_inner_size([560.0, 640.0]).with_min_inner_size([460.0, 480.0]);
+            if let Ok(icon) = eframe::icon_data::from_png_bytes(include_bytes!("../assets/icon.png")) {
+                vp = vp.with_icon(std::sync::Arc::new(icon));
+            }
+            vp
+        },
         ..Default::default()
     };
     match eframe::run_native("Video Compressor", options, Box::new(|cc| Ok(Box::new(App::new(cc))))) {
